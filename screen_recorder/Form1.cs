@@ -1,4 +1,5 @@
 using NAudio.Wave;
+using screen_recorder.AudioCapture;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Transitions;
@@ -38,12 +39,14 @@ namespace screen_recorder
             {
                 var process = Process.GetProcessesByName("vlc")[0];
 
-                /*
                 var outputFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "NAudio");
                 Directory.CreateDirectory(outputFolder);
                 var outputFilePath = Path.Combine(outputFolder, "recorded.wav");
-                var writer = new WaveFileWriter(outputFilePath, helper.Format);
-                */
+                var writer = new WaveFileWriter(outputFilePath, CapturingService.Format);
+
+                var capturingService = new CapturingService(process.Id);
+
+
 
                 recordingIcon.Visible = true;
                 Transition.run(timerDisplay, "Left", 52, new TransitionType_Deceleration(350));

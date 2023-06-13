@@ -46,6 +46,7 @@
             refreshAppsBtn = new Label();
             refreshAppsBtnTooltip = new ToolTip(components);
             panel1 = new Panel();
+            textBox1 = new TextBox();
             ((System.ComponentModel.ISupportInitialize)recordingIcon).BeginInit();
             groupBox1.SuspendLayout();
             recordDiscordWarning.SuspendLayout();
@@ -142,7 +143,7 @@
             // 
             // recordDiscordWarning
             // 
-            recordDiscordWarning.BackColor = Color.DarkGoldenrod;
+            recordDiscordWarning.BackColor = Color.PaleGoldenrod;
             recordDiscordWarning.Controls.Add(label3);
             recordDiscordWarning.Controls.Add(label1);
             recordDiscordWarning.Location = new Point(12, 192);
@@ -195,11 +196,20 @@
             panel1.Size = new Size(1, 225);
             panel1.TabIndex = 15;
             // 
+            // textBox1
+            // 
+            textBox1.Location = new Point(12, 58);
+            textBox1.Name = "textBox1";
+            textBox1.PlaceholderText = "Identyfikator";
+            textBox1.Size = new Size(96, 23);
+            textBox1.TabIndex = 16;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(537, 243);
+            Controls.Add(textBox1);
             Controls.Add(panel1);
             Controls.Add(refreshAppsBtn);
             Controls.Add(recordDiscordWarning);
@@ -241,5 +251,6 @@
         private ToolTip refreshAppsBtnTooltip;
         private Label label3;
         private Panel panel1;
+        private TextBox textBox1;
     }
 }
