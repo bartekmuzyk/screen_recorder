@@ -18,11 +18,11 @@ namespace screen_recorder.AudioCapture
     {
         public static readonly WaveFormat DefaultFormat = new(rate: 44100, bits: 16, channels: 2);
 
-        private WaveFormat _waveFormat;
+        private WaveFormat waveFormat;
 
-        public WaveFormat Format => _waveFormat;
+        public WaveFormat Format => waveFormat;
 
-        private AudioClient _client;
+        private AudioClient client;
 
         private static MMDevice? DefaultMMDevice //Speaker
         {
@@ -48,7 +48,7 @@ namespace screen_recorder.AudioCapture
 
         void IDisposable.Dispose()
         {
-            _client.Dispose();
+            client.Dispose();
         }
 
         private void Initialize(int processId)
@@ -80,27 +80,27 @@ namespace screen_recorder.AudioCapture
             completionHandler.WaitForCompletion();
             Marshal.ThrowExceptionForHR(resultHandler.GetActivateResult(out _, out var result));
             
-            _client = new((IAudioClient)result);
-            _waveFormat = DeviceMixFormat ?? DefaultFormat;
-            _client.Initialize(
+            client = new((IAudioClient)result);
+            waveFormat = DeviceMixFormat ?? DefaultFormat;
+            client.Initialize(
                 AudioClientShareMode.Shared,
                 AudioClientStreamFlags.Loopback | AudioClientStreamFlags.EventCallback,
                 10_000L * 100,
                 0,
-                _waveFormat,
+                waveFormat,
                 Guid.Empty
             );
         }
 
         public void Record(Func<WaveInEventArgs, bool> onDataAvailable)
         {
-            _client.Start();
+            client.Start();
 
-            var bytesPerFrame = _waveFormat.Channels * _waveFormat.BitsPerSample / 8;
-            int bufferSize = _client.BufferSize;
+            var bytesPerFrame = waveFormat.Channels * waveFormat.BitsPerSample / 8;
+            int bufferSize = client.BufferSize;
             var recordBuffer = new byte[bufferSize * bytesPerFrame];
-            int millisecondsTimeout = (int)((long)(10000000.0 * bufferSize / _waveFormat.SampleRate) / 10000 / 2);
-            AudioCaptureClient audioCaptureClient = _client.AudioCaptureClient;
+            int millisecondsTimeout = (int)((long)(10000000.0 * bufferSize / waveFormat.SampleRate) / 10000 / 2);
+            AudioCaptureClient audioCaptureClient = client.AudioCaptureClient;
 
             bool end = false;
 
