@@ -52,7 +52,11 @@ namespace screen_recorder.AudioCapture
 
     internal class CapturingService
     {
-        public static readonly WaveFormat Format = new WaveFormat(44100, 16, 2);
+        private const int REFTIMES_PER_SEC = 10_000_000;
+
+        private const int REFTIMES_PER_MILLISEC = 10_000;
+
+        public static readonly WaveFormat Format = new(rate: 44100, bits: 16, channels: 2);
 
         private IAudioClient _client;
 
@@ -111,6 +115,59 @@ namespace screen_recorder.AudioCapture
             result = _client.GetService(typeof(IAudioCaptureClient).GUID, out object obj);
             Marshal.ThrowExceptionForHR(result);
             _captureClient = obj as IAudioCaptureClient;
+        }
+
+        public void Record(Func<byte[]?, bool> onDataAvailable)
+        {
+            int result;
+
+            result = _client.GetBufferSize(out uint bufferFrameCount);
+            Marshal.ThrowExceptionForHR(result);
+
+            var actualBufferDuration = (double)REFTIMES_PER_SEC * bufferFrameCount / Format.SampleRate;
+            
+            result = _client.Start();
+            Marshal.ThrowExceptionForHR(result);
+
+            var end = false;
+
+            while (!end)
+            {
+                Task.Delay((int)Math.Round(actualBufferDuration / REFTIMES_PER_MILLISEC / 2)).GetAwaiter().GetResult();
+
+                uint packetLength;
+
+                result = _captureClient.GetNextPacketSize(out packetLength);
+                Marshal.ThrowExceptionForHR(result);
+
+                while (packetLength != 0)
+                {
+                    result = _captureClient.GetBuffer(
+                        out IntPtr dataPointer,
+                        out uint numFramesAvailable,
+                        out AudioClientBufferFlags flags,
+                        out _,
+                        out _
+                    );
+                    Marshal.ThrowExceptionForHR(result);
+
+                    byte[]? data = new byte[numFramesAvailable];
+                    Marshal.Copy(dataPointer, data, 0, (int)numFramesAvailable);
+
+                    if (flags.HasFlag(AudioClientBufferFlags.Silent))
+                    {
+                        data = null;
+                    }
+
+                    end = onDataAvailable(data);
+
+                    result = _captureClient.ReleaseBuffer(numFramesAvailable);
+                    Marshal.ThrowExceptionForHR(result);
+
+                    result = _captureClient.GetNextPacketSize(out packetLength);
+                    Marshal.ThrowExceptionForHR(result);
+                }
+            }
         }
 
         private AUDIOCLIENT_ACTIVATION_PARAMS GetParams(uint processId)
