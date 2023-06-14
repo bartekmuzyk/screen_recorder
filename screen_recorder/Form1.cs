@@ -37,26 +37,35 @@ namespace screen_recorder
         {
             if (!isRecording)
             {
-                var process = Process.GetProcessesByName("vlc")[0];
-
-                var outputFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "NAudio");
-                Directory.CreateDirectory(outputFolder);
-                var outputFilePath = Path.Combine(outputFolder, "recorded.wav");
-                var writer = new WaveFileWriter(outputFilePath, CapturingService.Format);
-
-                var capturingService = new CapturingService(process.Id);
-
-
+                isRecording = true;
 
                 recordingIcon.Visible = true;
                 Transition.run(timerDisplay, "Left", 52, new TransitionType_Deceleration(350));
-                isRecording = true;
+
+                new Thread(() =>
+                {
+                    var process = Process.GetProcessesByName("firefox")[0];
+
+                    var outputFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "NAudio");
+                    Directory.CreateDirectory(outputFolder);
+                    var outputFilePath = Path.Combine(outputFolder, "recorded.wav");
+
+                    var capturingService = new CapturingService(process.Id);
+                    var writer = new WaveFileWriter(outputFilePath, capturingService.Format);
+
+                    capturingService.Record(args =>
+                    {
+                        writer.Write(args.Buffer, 0, args.BytesRecorded);
+
+                        return !isRecording;
+                    });
+                }).Start();
             }
             else
             {
+                isRecording = false;
                 recordingIcon.Visible = false;
                 Transition.run(timerDisplay, "Left", 16, new TransitionType_Acceleration(350));
-                isRecording = false;
             }
         }
 
