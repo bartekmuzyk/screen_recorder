@@ -63,6 +63,16 @@ namespace screen_recorder.Properties {
         /// <summary>
         ///   Wyszukuje zlokalizowany zasób typu System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap identifierHelpScreenshot {
+            get {
+                object obj = ResourceManager.GetObject("identifierHelpScreenshot", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Wyszukuje zlokalizowany zasób typu System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap rec_icon {
             get {
                 object obj = ResourceManager.GetObject("rec icon", resourceCulture);

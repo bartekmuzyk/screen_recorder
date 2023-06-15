@@ -6,23 +6,15 @@ using System.Runtime.InteropServices;
 
 namespace screen_recorder.AudioCapture
 {
-    [ComImport]
-    [Guid("5B0D3235-4DBA-4D44-865E-8F1D0E4FD04D")]
-    [InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
-    unsafe interface IMemoryBufferByteAccess
-    {
-        void GetBuffer(out byte* buffer, out uint capacity);
-    }
-
     internal class CapturingService : IDisposable
     {
         public static readonly WaveFormat DefaultFormat = new(rate: 44100, bits: 16, channels: 2);
 
-        private WaveFormat waveFormat;
+        private readonly WaveFormat waveFormat;
 
         public WaveFormat Format => waveFormat;
 
-        private AudioClient client;
+        private readonly AudioClient client;
 
         private static MMDevice? DefaultMMDevice //Speaker
         {
@@ -42,16 +34,6 @@ namespace screen_recorder.AudioCapture
         private static WaveFormat? DeviceMixFormat => DefaultMMDevice?.AudioClient?.MixFormat;
 
         public CapturingService(int processId)
-        {
-            Initialize(processId);
-        }
-
-        void IDisposable.Dispose()
-        {
-            client.Dispose();
-        }
-
-        private void Initialize(int processId)
         {
             var completionHandler = new ActivateAudioInterfaceCompletionHandler<IAudioClient>();
             var @params = new ActivationParameters()
@@ -79,7 +61,7 @@ namespace screen_recorder.AudioCapture
             );
             completionHandler.WaitForCompletion();
             Marshal.ThrowExceptionForHR(resultHandler.GetActivateResult(out _, out var result));
-            
+
             client = new((IAudioClient)result);
             waveFormat = DeviceMixFormat ?? DefaultFormat;
             client.Initialize(
@@ -90,6 +72,11 @@ namespace screen_recorder.AudioCapture
                 waveFormat,
                 Guid.Empty
             );
+        }
+
+        void IDisposable.Dispose()
+        {
+            client.Dispose();
         }
 
         public void Record(Func<WaveInEventArgs, bool> onDataAvailable)
@@ -136,7 +123,7 @@ namespace screen_recorder.AudioCapture
                         nextPacketSize = audioCaptureClient.GetNextPacketSize();
                     }
 
-                    onDataAvailable.Invoke(new WaveInEventArgs(recordBuffer, num));
+                    end = onDataAvailable(new WaveInEventArgs(recordBuffer, num));
 
                     continue;
                 }

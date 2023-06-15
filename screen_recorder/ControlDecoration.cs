@@ -13,14 +13,14 @@ namespace screen_recorder
                                                         int nHeightEllipse // width of ellipse
                                                         );
 
-        public static void MakeControlRounded(Control control, int padding = 0)
+        public static void MakeControlRounded(Control control, int padding = 0, int radius = 7)
         {
-            control.Region = Region.FromHrgn(CreateRoundRectRgn(0 + padding, 0 + padding, control.Width - padding, control.Height - padding, 7, 7));
+            control.Region = Region.FromHrgn(CreateRoundRectRgn(0 + padding, 0 + padding, control.Width - padding, control.Height - padding, radius, radius));
         }
 
-        public static void MakeControlRounded(Control control, int leftPadding, int rightPadding, int topPadding, int bottomPadding)
+        public static void MakeControlRounded(Control control, int leftPadding, int rightPadding, int topPadding, int bottomPadding, int radius = 7)
         {
-            control.Region = Region.FromHrgn(CreateRoundRectRgn(0 + leftPadding, 0 + topPadding, control.Width - rightPadding, control.Height - bottomPadding, 7, 7));
+            control.Region = Region.FromHrgn(CreateRoundRectRgn(0 + leftPadding, 0 + topPadding, control.Width - rightPadding, control.Height - bottomPadding, radius, radius));
         }
     }
 }
