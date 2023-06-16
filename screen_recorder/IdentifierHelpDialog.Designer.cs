@@ -55,7 +55,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(292, 148);
+            ClientSize = new Size(292, 149);
             Controls.Add(pictureBox1);
             Controls.Add(label2);
             FormBorderStyle = FormBorderStyle.FixedDialog;
@@ -64,6 +64,7 @@
             Name = "IdentifierHelpDialog";
             ShowIcon = false;
             Text = "Czym jest identyfikator?";
+            Load += IdentifierHelpDialog_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             ResumeLayout(false);
             PerformLayout();

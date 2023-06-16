@@ -129,7 +129,7 @@ namespace screen_recorder
 
                 var transition = new Transition(new TransitionType_Deceleration(350));
                 transition.add(timerDisplay, "Left", 52);
-                transition.add(optionsBlocker, "Top", optionsBlocker.Top - optionsBlocker.Height);
+                transition.add(optionsBlocker, "Top", 96);
                 transition.run();
             }
             else
@@ -143,7 +143,7 @@ namespace screen_recorder
                 recordingIcon.Visible = false;
                 var transition = new Transition(new TransitionType_Acceleration(350));
                 transition.add(timerDisplay, "Left", 16);
-                transition.add(optionsBlocker, "Top", optionsBlocker.Top + optionsBlocker.Height);
+                transition.add(optionsBlocker, "Top", 263);
                 transition.run();
             }
         }

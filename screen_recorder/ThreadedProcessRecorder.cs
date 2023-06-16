@@ -15,7 +15,7 @@ namespace screen_recorder
     {
         private readonly Thread recordingThread;
 
-        private readonly ConcurrentQueue<string> queue = new();
+        private readonly ConcurrentQueue<string> opQueue = new();
 
         public ThreadedProcessRecorder(Process process, string savePath)
         {
@@ -28,7 +28,7 @@ namespace screen_recorder
                 {
                     writer.Write(args.Buffer, 0, args.BytesRecorded);
 
-                    var success = queue.TryDequeue(out string? op);
+                    opQueue.TryDequeue(out string? op);
                     return op == "stop";
                 });
             });
@@ -42,7 +42,7 @@ namespace screen_recorder
 
         public void Stop()
         {
-            queue.Enqueue("stop");
+            opQueue.Enqueue("stop");
             recordingThread.Join();
         }
     }

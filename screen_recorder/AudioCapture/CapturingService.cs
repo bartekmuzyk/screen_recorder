@@ -72,6 +72,7 @@ namespace screen_recorder.AudioCapture
                 waveFormat,
                 Guid.Empty
             );
+            client.Start();
         }
 
         void IDisposable.Dispose()
@@ -81,8 +82,6 @@ namespace screen_recorder.AudioCapture
 
         public void Record(Func<WaveInEventArgs, bool> onDataAvailable)
         {
-            client.Start();
-
             var bytesPerFrame = waveFormat.Channels * waveFormat.BitsPerSample / 8;
             int bufferSize = client.BufferSize;
             var recordBuffer = new byte[bufferSize * bytesPerFrame];
