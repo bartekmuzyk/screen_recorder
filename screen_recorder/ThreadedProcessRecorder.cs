@@ -31,8 +31,10 @@ namespace screen_recorder
                     opQueue.TryDequeue(out string? op);
                     return op == "stop";
                 });
-            });
-            recordingThread.IsBackground = true;
+            })
+            {
+                IsBackground = true
+            };
         }
 
         public void Start()
