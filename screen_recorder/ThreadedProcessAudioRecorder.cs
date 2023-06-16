@@ -1,27 +1,21 @@
 ﻿using NAudio.Wave;
 using screen_recorder.AudioCapture;
-using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using ThreadState = System.Threading.ThreadState;
 
 namespace screen_recorder
 {
-    internal class ThreadedProcessRecorder
+    internal class ThreadedProcessAudioRecorder
     {
         private readonly Thread recordingThread;
 
         private readonly ConcurrentQueue<string> opQueue = new();
 
-        public ThreadedProcessRecorder(Process process, string savePath)
+        public ThreadedProcessAudioRecorder(Process process, string savePath)
         {
             recordingThread = new Thread(() =>
             {
-                using var capturingService = new CapturingService(process.Id);
+                using var capturingService = new ProcessAudioCaptureService(process.Id);
                 using var writer = new WaveFileWriter(savePath, capturingService.Format);
 
                 capturingService.Record(args =>

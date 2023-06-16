@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace screen_recorder.AudioCapture
 {
-    internal class CapturingService : IDisposable
+    internal class ProcessAudioCaptureService : IDisposable
     {
         public static readonly WaveFormat DefaultFormat = new(rate: 44100, bits: 16, channels: 2);
 
@@ -33,7 +33,7 @@ namespace screen_recorder.AudioCapture
         }
         private static WaveFormat? DeviceMixFormat => DefaultMMDevice?.AudioClient?.MixFormat;
 
-        public CapturingService(int processId)
+        public ProcessAudioCaptureService(int processId)
         {
             var completionHandler = new ActivateAudioInterfaceCompletionHandler<IAudioClient>();
             var @params = new ActivationParameters()

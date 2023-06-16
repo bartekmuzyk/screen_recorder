@@ -1,14 +1,18 @@
 using NAudio.Wave;
 using screen_recorder.AudioCapture;
 using screen_recorder.Models;
+using ScreenRecorderLib;
 using System.Diagnostics;
 using Transitions;
+using ScreenRecorder = ScreenRecorderLib.Recorder;
 
 namespace screen_recorder
 {
     public partial class Form1 : Form
     {
-        private ThreadedProcessRecorder? recorder = null;
+        private ThreadedProcessAudioRecorder? capAudioRecorder = null;
+
+        private ScreenRecorder? capMainRecorder = null;
 
         private ProcessInfo[] availableAppsToCapture = Array.Empty<ProcessInfo>();
 
@@ -65,7 +69,7 @@ namespace screen_recorder
         {
             var self = (Button)sender;
 
-            if (recorder is null)
+            if (capAudioRecorder is null)
             {
                 // Save possibly modified identifier.
                 // Saving settings immediately in identifierTextBox_TextChanged causes
@@ -121,8 +125,50 @@ namespace screen_recorder
 
                 var pathProvider = new RecordingFilePathProvider(saveDirectory, processToCapture.ProcessName, identifier);
 
-                recorder = new ThreadedProcessRecorder(processToCapture, pathProvider.CapAudioFilePath);
-                recorder.Start();
+                capAudioRecorder = new ThreadedProcessAudioRecorder(processToCapture, pathProvider.CapAudioFilePath);
+                capMainRecorder = ScreenRecorder.CreateRecorder(
+                    new()
+                    {
+                        SourceOptions = new()
+                        {
+                            RecordingSources = new()
+                            {
+                                recordWholeScreen.Checked ?
+                                    new DisplayRecordingSource(DisplayRecordingSource.MainMonitor)
+                                    :
+                                    new WindowRecordingSource(processToCapture.MainWindowHandle)
+                            }
+                        },
+                        VideoEncoderOptions = new()
+                        {
+                            Bitrate = 8000 * 1000,
+                            Framerate = 60,
+                            IsFixedFramerate = true,
+                            IsFragmentedMp4Enabled = true,
+                            IsLowLatencyEnabled = false
+                        },
+                        AudioOptions = new()
+                        {
+                            IsAudioEnabled = true,
+                            IsOutputDeviceEnabled = false,
+                            IsInputDeviceEnabled = true,
+                            //AudioInputDevice = ScreenRecorder.GetSystemAudioDevices(AudioDeviceSource.InputDevices).FirstOrDefault()?.DeviceName
+                        },
+                        MouseOptions = new()
+                        {
+                            IsMouseClicksDetected = false,
+                            IsMousePointerEnabled = true
+                        }
+                    }
+                );
+                capMainRecorder.OnRecordingFailed += (sender, e) =>
+                {
+                    EndRecording();
+                    MessageBox.Show(e.Error, "Wyst¹pi³ b³¹d podczas nagrywania");
+                };
+
+                capAudioRecorder.Start();
+                capMainRecorder.Record(pathProvider.CapMainFilePath);
 
                 self.Text = "Zatrzymaj nagrywanie";
                 recordingIcon.Visible = true;
@@ -134,18 +180,29 @@ namespace screen_recorder
             }
             else
             {
-                self.Text = "Koñczenie...";
-
-                recorder.Stop();
-                recorder = null;
-
-                self.Text = "Rozpocznij nagrywanie";
-                recordingIcon.Visible = false;
-                var transition = new Transition(new TransitionType_Acceleration(350));
-                transition.add(timerDisplay, "Left", 16);
-                transition.add(optionsBlocker, "Top", 263);
-                transition.run();
+                EndRecording();
             }
+        }
+
+        private void EndRecording()
+        {
+            var self = startRecordingButton;
+
+            self.Text = "Koñczenie...";
+
+            capAudioRecorder?.Stop();
+            capAudioRecorder = null;
+
+            capMainRecorder?.Stop();
+            capMainRecorder?.Dispose();
+            capMainRecorder = null;
+
+            self.Text = "Rozpocznij nagrywanie";
+            recordingIcon.Visible = false;
+            var transition = new Transition(new TransitionType_Acceleration(350));
+            transition.add(timerDisplay, "Left", 16);
+            transition.add(optionsBlocker, "Top", 263);
+            transition.run();
         }
 
         private void refreshAppsBtn_Click(object sender, EventArgs e)
