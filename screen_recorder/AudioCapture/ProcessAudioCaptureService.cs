@@ -16,6 +16,14 @@ namespace screen_recorder.AudioCapture
 
         private readonly AudioClient client;
 
+        private readonly int bytesPerFrame = 0;
+
+        private readonly int bufferSize = 0;
+
+        private byte[] recordBuffer = Array.Empty<byte>();
+
+        public bool SuccessfulInit { get; } = false;
+
         private static MMDevice? DefaultMMDevice //Speaker
         {
             get
@@ -73,6 +81,36 @@ namespace screen_recorder.AudioCapture
                 Guid.Empty
             );
             client.Start();
+
+            bytesPerFrame = waveFormat.Channels * waveFormat.BitsPerSample / 8;
+
+            var tries = 0;
+            while (true)
+            {
+                Debug.WriteLine($"try {tries}");
+                if (tries > 10)
+                {
+                    break;
+                }
+
+                try
+                {
+                    bufferSize = client.BufferSize;
+                    recordBuffer = new byte[bufferSize * bytesPerFrame];
+                    SuccessfulInit = true;
+                }
+                catch (OverflowException)
+                {
+                    tries++;
+                    Task.Delay(250).Wait();
+                }
+
+                if (SuccessfulInit)
+                {
+                    SuccessfulInit = bufferSize > 0;
+                    tries++;
+                }
+            }
         }
 
         void IDisposable.Dispose()
@@ -82,9 +120,6 @@ namespace screen_recorder.AudioCapture
 
         public void Record(Func<WaveInEventArgs, bool> onDataAvailable)
         {
-            var bytesPerFrame = waveFormat.Channels * waveFormat.BitsPerSample / 8;
-            int bufferSize = client.BufferSize;
-            var recordBuffer = new byte[bufferSize * bytesPerFrame];
             int millisecondsTimeout = (int)((long)(10000000.0 * bufferSize / waveFormat.SampleRate) / 10000 / 2);
             AudioCaptureClient audioCaptureClient = client.AudioCaptureClient;
 

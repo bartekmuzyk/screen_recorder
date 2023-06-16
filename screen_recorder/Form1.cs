@@ -74,10 +74,10 @@ namespace screen_recorder
                 // Save possibly modified identifier.
                 // Saving settings immediately in identifierTextBox_TextChanged causes
                 // massive memory usage which would need to be cleaned using GC.Collect().
-                // I decided not to do this since:
+                // I decided not to do this, since:
                 // 1. Garbage collection is heavy on resources
                 // 2. Garbage collection on demand causes a little bit of lag and could make the text box unresponsive
-                // 3. Garbage collection on demand should be a last resort
+                // 3. Garbage collection on demand should be a last resort anyways
                 Properties.Settings.Default.Save();
 
                 void FailedToStart(string reason)
@@ -151,8 +151,7 @@ namespace screen_recorder
                         {
                             IsAudioEnabled = true,
                             IsOutputDeviceEnabled = false,
-                            IsInputDeviceEnabled = true,
-                            //AudioInputDevice = ScreenRecorder.GetSystemAudioDevices(AudioDeviceSource.InputDevices).FirstOrDefault()?.DeviceName
+                            IsInputDeviceEnabled = true
                         },
                         MouseOptions = new()
                         {
@@ -167,7 +166,14 @@ namespace screen_recorder
                     MessageBox.Show(e.Error, "Wyst¹pi³ b³¹d podczas nagrywania");
                 };
 
-                capAudioRecorder.Start();
+                var successfulCapAudioInit = capAudioRecorder.Start();
+
+                if (!successfulCapAudioInit)
+                {
+                    FailedToStart("Nie uda³o siê zainicjowaæ bufora audio. Ponowne rozpoczêcie nagrania mo¿e pomóc.");
+                    return;
+                }
+
                 capMainRecorder.Record(pathProvider.CapMainFilePath);
 
                 self.Text = "Zatrzymaj nagrywanie";
