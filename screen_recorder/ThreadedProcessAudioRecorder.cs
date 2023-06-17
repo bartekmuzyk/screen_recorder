@@ -12,7 +12,9 @@ namespace screen_recorder
 
         private readonly ConcurrentQueue<string> opQueue = new();
 
-        private readonly AutoResetEvent waitHandle = new(false);
+        private readonly AutoResetEvent successfulInitWaitHandle = new(false);
+
+        private readonly AutoResetEvent recordingBufferInitWaitHandle = new(false);
 
         private bool successfulInit = false;
 
@@ -22,7 +24,7 @@ namespace screen_recorder
             {
                 using var capturingService = new ProcessAudioCaptureService(process.Id);
                 successfulInit = capturingService.SuccessfulInit;
-                waitHandle.Set();
+                successfulInitWaitHandle.Set();
 
                 if (!successfulInit)
                 {
@@ -38,7 +40,8 @@ namespace screen_recorder
 
                         opQueue.TryDequeue(out string? op);
                         return op == "stop";
-                    }
+                    },
+                    recordingBufferInitWaitHandle
                 );
             })
             {
@@ -49,9 +52,16 @@ namespace screen_recorder
         public bool Start()
         {
             recordingThread.Start();
-            waitHandle.WaitOne();
+            successfulInitWaitHandle.WaitOne();
 
-            return successfulInit;
+            if (!successfulInit)
+            {
+                return false;
+            }
+
+            recordingBufferInitWaitHandle.WaitOne();
+
+            return true;
         }
 
         public void Stop()
