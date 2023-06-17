@@ -16,11 +16,7 @@ namespace screen_recorder.AudioCapture
 
         private readonly AudioClient client;
 
-        private readonly int bytesPerFrame = 0;
-
-        private readonly int bufferSize = 0;
-
-        private byte[] recordBuffer = Array.Empty<byte>();
+        private readonly int initialBufferSize = 0;
 
         public bool SuccessfulInit { get; } = false;
 
@@ -75,42 +71,27 @@ namespace screen_recorder.AudioCapture
             client.Initialize(
                 AudioClientShareMode.Shared,
                 AudioClientStreamFlags.Loopback | AudioClientStreamFlags.EventCallback,
-                10_000L * 100,
+                5 * 10_000_000,
                 0,
                 waveFormat,
                 Guid.Empty
             );
             client.Start();
 
-            bytesPerFrame = waveFormat.Channels * waveFormat.BitsPerSample / 8;
-
             var tries = 0;
-            while (true)
+            while (initialBufferSize <= 0)
             {
-                Debug.WriteLine($"try {tries}");
-                if (tries > 10)
+                if (tries > 20)
                 {
                     break;
                 }
 
-                try
-                {
-                    bufferSize = client.BufferSize;
-                    recordBuffer = new byte[bufferSize * bytesPerFrame];
-                    SuccessfulInit = true;
-                }
-                catch (OverflowException)
-                {
-                    tries++;
-                    Task.Delay(250).Wait();
-                }
-
-                if (SuccessfulInit)
-                {
-                    SuccessfulInit = bufferSize > 0;
-                    tries++;
-                }
+                initialBufferSize = client.BufferSize;
+                Task.Delay(100).Wait();
+                tries++;
             }
+
+            SuccessfulInit = initialBufferSize > 0;
         }
 
         void IDisposable.Dispose()
@@ -120,7 +101,10 @@ namespace screen_recorder.AudioCapture
 
         public void Record(Func<WaveInEventArgs, bool> onDataAvailable)
         {
-            int millisecondsTimeout = (int)((long)(10000000.0 * bufferSize / waveFormat.SampleRate) / 10000 / 2);
+            var bytesPerFrame = waveFormat.Channels * waveFormat.BitsPerSample / 8;
+            var recordBuffer = new byte[initialBufferSize * bytesPerFrame];
+
+            int millisecondsTimeout = (int)((long)(10000000.0 * initialBufferSize / waveFormat.SampleRate) / 10000 / 2);
             AudioCaptureClient audioCaptureClient = client.AudioCaptureClient;
 
             bool end = false;
@@ -137,6 +121,12 @@ namespace screen_recorder.AudioCapture
                     {
                         IntPtr buffer = audioCaptureClient.GetBuffer(out int numFramesToRead, out AudioClientBufferFlags bufferFlags);
                         int num2 = numFramesToRead * bytesPerFrame;
+
+                        if (num2 > recordBuffer.Length)
+                        {
+                            recordBuffer = new byte[num2];
+                        }
+
                         if (Math.Max(0, recordBuffer.Length - num) < num2 && num > 0)
                         {
                             onDataAvailable(new WaveInEventArgs(recordBuffer, num));

@@ -83,10 +83,12 @@ namespace screen_recorder
                 void FailedToStart(string reason)
                 {
                     self.Text = "Rozpocznij nagrywanie";
+                    self.Enabled = true;
                     MessageBox.Show(reason, "Nie uda³o siê rozpocz¹æ nagrania.", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
 
                 self.Text = "Rozpoczynanie...";
+                self.Enabled = false;
 
                 if (saveDirectory == string.Empty)
                 {
@@ -123,6 +125,13 @@ namespace screen_recorder
                     return;
                 }
 
+                if (string.IsNullOrEmpty(processToCapture.MainWindowTitle))
+                {
+                    FailedToStart("Wybrany proces do przechwytywania ju¿ nie posiada okna.");
+                    RefreshApps();
+                    return;
+                }
+
                 var pathProvider = new RecordingFilePathProvider(saveDirectory, processToCapture.ProcessName, identifier);
 
                 capAudioRecorder = new ThreadedProcessAudioRecorder(processToCapture, pathProvider.CapAudioFilePath);
@@ -143,9 +152,9 @@ namespace screen_recorder
                         {
                             Bitrate = 8000 * 1000,
                             Framerate = 60,
-                            IsFixedFramerate = true,
+                            IsFixedFramerate = false,
                             IsFragmentedMp4Enabled = true,
-                            IsLowLatencyEnabled = false
+                            IsLowLatencyEnabled = true
                         },
                         AudioOptions = new()
                         {
@@ -170,13 +179,16 @@ namespace screen_recorder
 
                 if (!successfulCapAudioInit)
                 {
+                    File.Delete(pathProvider.CapAudioFilePath);
                     FailedToStart("Nie uda³o siê zainicjowaæ bufora audio. Ponowne rozpoczêcie nagrania mo¿e pomóc.");
+                    EndRecording();
                     return;
                 }
 
                 capMainRecorder.Record(pathProvider.CapMainFilePath);
 
                 self.Text = "Zatrzymaj nagrywanie";
+                self.Enabled = true;
                 recordingIcon.Visible = true;
 
                 var transition = new Transition(new TransitionType_Deceleration(350));
@@ -194,6 +206,7 @@ namespace screen_recorder
         {
             var self = startRecordingButton;
 
+            self.Enabled = false;
             self.Text = "Koñczenie...";
 
             capAudioRecorder?.Stop();
@@ -204,6 +217,7 @@ namespace screen_recorder
             capMainRecorder = null;
 
             self.Text = "Rozpocznij nagrywanie";
+            self.Enabled = true;
             recordingIcon.Visible = false;
             var transition = new Transition(new TransitionType_Acceleration(350));
             transition.add(timerDisplay, "Left", 16);
