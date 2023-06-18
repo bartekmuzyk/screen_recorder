@@ -3,6 +3,7 @@ using screen_recorder.AudioCapture;
 using screen_recorder.Models;
 using ScreenRecorderLib;
 using System.Diagnostics;
+using System.Globalization;
 using Transitions;
 using ScreenRecorder = ScreenRecorderLib.Recorder;
 
@@ -17,6 +18,10 @@ namespace screen_recorder
         private ProcessInfo[] availableAppsToCapture = Array.Empty<ProcessInfo>();
 
         private string saveDirectory = string.Empty;
+
+        private int hiddenOptionsBlockerPosition;
+
+        private readonly List<RecordingToMix> recordingsToMix = new();
 
         public Form1()
         {
@@ -39,6 +44,13 @@ namespace screen_recorder
 
             saveDirectory = Properties.Settings.Default.saveDir;
 
+            if (!Directory.Exists(saveDirectory))
+            {
+                Properties.Settings.Default.saveDir = saveDirectory = string.Empty;
+                Properties.Settings.Default.Save();
+                MessageBox.Show("Poprzednio ustawiony folder dla nagrañ nie mo¿e zostaæ teraz znaleziony.", "Zresetowano œcie¿kê nagrañ", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+
             if (saveDirectory != string.Empty)
             {
                 saveDirectoryDisplay.Text = saveDirectory;
@@ -49,9 +61,131 @@ namespace screen_recorder
             ControlDecoration.MakeControlRounded(refreshAppsBtn, 1, 1, 2, 0);
             identifierHelpBtn.FlatAppearance.BorderSize = 0;
             ControlDecoration.MakeControlRounded(identifierHelpBtn, 1, 1, 3, 2, 20);
+            ControlDecoration.MakeControlRounded(recordingsToMixCounterDisplay, 0, 1, 2, 0, 20);
             refreshAppsBtnTooltip.SetToolTip(refreshAppsBtn, "Odœwie¿ listê aplikacji");
 
             RefreshApps();
+
+            hiddenOptionsBlockerPosition = optionsBlocker.Top;
+
+            if (saveDirectory == string.Empty)
+            {
+                seeRecordingsToMixBtn.Enabled = false;
+                seeRecordingsToMixBtn.Text = "Brak nagrañ do mixu";
+            }
+
+            RefreshRecordingsToMix();
+        }
+
+        private void RefreshRecordingsToMix()
+        {
+            seeRecordingsToMixBtn.Enabled = false;
+            seeRecordingsToMixBtn.Text = "Skanowanie nagrañ...";
+
+            new Thread(() =>
+            {
+                RecordingInfo PathToRecording(string filePath)
+                {
+                    var fileName = Path.GetFileName(filePath);
+
+                    var split = fileName.Split('_');
+                    var splitFirstFragment = split[0].Split('-');
+                    var splitLastFragment = split[split.Length - 1].Split('.');
+                    split = new string[] {
+                        splitFirstFragment[0], splitFirstFragment[1],
+                        split[1], split[2],
+                        splitLastFragment[0], splitLastFragment[1]
+                    };
+
+                    var recordingDate = DateTime.ParseExact(split[0], RecordingFilePathProvider.FILE_NAME_DATE_FORMAT, CultureInfo.InvariantCulture);
+
+                    return new RecordingInfo(
+                        recordingDate,
+                        int.Parse(split[1]),
+                        split[2],
+                        split[3] switch
+                        {
+                            "CapMain" => RecordingType.CapMain,
+                            "CapAudio" => RecordingType.CapAudio,
+                            _ => throw new Exception($"Unkown recording file type: {split[3]}")
+                        },
+                        filePath
+                    );
+                }
+
+                bool RecordingMatches(RecordingInfo left, RecordingInfo right)
+                {
+                    return (
+                        left.GameName == right.GameName &&
+                        left.RecordingNumber == right.RecordingNumber &&
+                        left.Date == right.Date &&
+                        left.Type != right.Type
+                    );
+                }
+
+                var recordings = Directory.GetFiles(saveDirectory).Select(PathToRecording);
+                var matches = new List<RecordingInfo[]>();
+
+                foreach (var recording in recordings)
+                {
+                    var matchFound = false;
+
+                    for (int i = 0; i < matches.Count; i++)
+                    {
+                        var match = matches[i];
+
+                        if (match.Length == 2) continue;
+
+                        if (RecordingMatches(match[0], recording))
+                        {
+                            matches[i] = new[] { match[0], recording };
+                            matchFound = true;
+                            break;
+                        }
+                    }
+
+                    if (!matchFound)
+                    {
+                        matches.Add(new[] { recording });
+                    }
+                }
+
+                matches.RemoveAll(match => match.Length < 2);
+
+                foreach (var match in matches)
+                {
+                    recordingsToMix.Add(
+                        new RecordingToMix(
+                            match[0].Date,
+                            match[0].RecordingNumber,
+                            match[0].GameName,
+                            match[0].Type == RecordingType.CapAudio ? match[0] : match[1],
+                            match[1].Type == RecordingType.CapMain ? match[1] : match[0]
+                        )
+                    );
+                }
+
+                if (recordingsToMix.Count > 0)
+                {
+                    Invoke(() =>
+                    {
+                        recordingsToMixCounterDisplay.Text = recordingsToMix.Count.ToString();
+                        recordingsToMixCounterDisplay.Visible = true;
+                        seeRecordingsToMixBtn.Enabled = true;
+                        seeRecordingsToMixBtn.Text = "Zobacz nagrania do mixu";
+                    });
+                }
+                else
+                {
+                    Invoke(() =>
+                    {
+                        recordingsToMixCounterDisplay.Text = "0";
+                        recordingsToMixCounterDisplay.Visible = false;
+                        seeRecordingsToMixBtn.Enabled = false;
+                        seeRecordingsToMixBtn.Text = "Brak nagrañ do mixu";
+                    });
+                }
+            }).Start();
         }
 
         private void changeRecordingLocationBtn_Click(object sender, EventArgs e)
@@ -221,7 +355,7 @@ namespace screen_recorder
             recordingIcon.Visible = false;
             var transition = new Transition(new TransitionType_Acceleration(350));
             transition.add(timerDisplay, "Left", 16);
-            transition.add(optionsBlocker, "Top", 263);
+            transition.add(optionsBlocker, "Top", hiddenOptionsBlockerPosition);
             transition.run();
         }
 

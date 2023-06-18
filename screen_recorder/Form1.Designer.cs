@@ -47,6 +47,8 @@
             optionsBlocker = new Panel();
             label3 = new Label();
             label1 = new Label();
+            seeRecordingsToMixBtn = new Button();
+            recordingsToMixCounterDisplay = new Label();
             ((System.ComponentModel.ISupportInitialize)recordingIcon).BeginInit();
             groupBox1.SuspendLayout();
             optionsBlocker.SuspendLayout();
@@ -189,9 +191,9 @@
             // 
             optionsBlocker.Controls.Add(label3);
             optionsBlocker.Controls.Add(label1);
-            optionsBlocker.Location = new Point(0, 263);
+            optionsBlocker.Location = new Point(0, 281);
             optionsBlocker.Name = "optionsBlocker";
-            optionsBlocker.Size = new Size(273, 167);
+            optionsBlocker.Size = new Size(273, 185);
             optionsBlocker.TabIndex = 20;
             // 
             // label3
@@ -213,12 +215,37 @@
             label1.TabIndex = 0;
             label1.Text = "Trwa nagrywanie";
             // 
+            // seeRecordingsToMixBtn
+            // 
+            seeRecordingsToMixBtn.Enabled = false;
+            seeRecordingsToMixBtn.Location = new Point(12, 254);
+            seeRecordingsToMixBtn.Name = "seeRecordingsToMixBtn";
+            seeRecordingsToMixBtn.Size = new Size(189, 23);
+            seeRecordingsToMixBtn.TabIndex = 21;
+            seeRecordingsToMixBtn.Text = "Skanowanie nagrań...";
+            seeRecordingsToMixBtn.UseVisualStyleBackColor = true;
+            // 
+            // recordingsToMixCounterDisplay
+            // 
+            recordingsToMixCounterDisplay.BackColor = Color.Red;
+            recordingsToMixCounterDisplay.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point);
+            recordingsToMixCounterDisplay.ForeColor = Color.White;
+            recordingsToMixCounterDisplay.Location = new Point(207, 254);
+            recordingsToMixCounterDisplay.Name = "recordingsToMixCounterDisplay";
+            recordingsToMixCounterDisplay.Size = new Size(23, 23);
+            recordingsToMixCounterDisplay.TabIndex = 22;
+            recordingsToMixCounterDisplay.Text = "0";
+            recordingsToMixCounterDisplay.TextAlign = ContentAlignment.MiddleCenter;
+            recordingsToMixCounterDisplay.Visible = false;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(273, 263);
+            ClientSize = new Size(273, 281);
             Controls.Add(optionsBlocker);
+            Controls.Add(recordingsToMixCounterDisplay);
+            Controls.Add(seeRecordingsToMixBtn);
             Controls.Add(recordWholeScreen);
             Controls.Add(identifierHelpBtn);
             Controls.Add(appChooser);
@@ -262,5 +289,7 @@
         private Panel optionsBlocker;
         private Label label1;
         private Label label3;
+        private Button seeRecordingsToMixBtn;
+        private Label recordingsToMixCounterDisplay;
     }
 }

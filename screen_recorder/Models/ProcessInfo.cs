@@ -6,5 +6,10 @@ using System.Threading.Tasks;
 
 namespace screen_recorder.Models
 {
-    public record ProcessInfo(int Id, string Name, string MainWindowTitle, string? FileName);
+    public record ProcessInfo(
+        int Id,
+        string Name,
+        string MainWindowTitle,
+        string? FileName
+    );
 }

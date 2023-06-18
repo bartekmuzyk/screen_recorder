@@ -12,6 +12,8 @@ namespace screen_recorder
         // {date}-{recordingNumber}_{appName}_{type}_{identifier}.{format}
         private const string FILE_NAME_TEMPLATE = "{0}-{1}_{2}_{3}_{4}.{5}";
 
+        public const string FILE_NAME_DATE_FORMAT = "yyyyddMM";
+
         public string CapAudioFilePath { get; private set; } = "";
 
         public string CapMainFilePath { get; private set; } = "";
@@ -37,7 +39,7 @@ namespace screen_recorder
             return Path.Combine(
                 directory,
                 string.Format(FILE_NAME_TEMPLATE,
-                    DateTime.Now.ToString("yyyyddMM"),
+                    DateTime.Now.ToString(FILE_NAME_DATE_FORMAT),
                     recordingNumber,
                     appName,
                     type,
