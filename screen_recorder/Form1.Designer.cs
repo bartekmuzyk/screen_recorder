@@ -38,6 +38,7 @@
             recordingsDirectoryChooser = new FolderBrowserDialog();
             recordingIcon = new PictureBox();
             groupBox1 = new GroupBox();
+            openSaveDirBtn = new Button();
             refreshAppsBtn = new Label();
             refreshAppsBtnTooltip = new ToolTip(components);
             identifierTextBox = new TextBox();
@@ -88,7 +89,7 @@
             // 
             changeRecordingLocationBtn.Location = new Point(6, 59);
             changeRecordingLocationBtn.Name = "changeRecordingLocationBtn";
-            changeRecordingLocationBtn.Size = new Size(236, 23);
+            changeRecordingLocationBtn.Size = new Size(168, 23);
             changeRecordingLocationBtn.TabIndex = 7;
             changeRecordingLocationBtn.Text = "Wybierz lokalizację nagrań";
             changeRecordingLocationBtn.UseVisualStyleBackColor = true;
@@ -117,6 +118,7 @@
             // 
             // groupBox1
             // 
+            groupBox1.Controls.Add(openSaveDirBtn);
             groupBox1.Controls.Add(changeRecordingLocationBtn);
             groupBox1.Controls.Add(saveDirectoryDisplay);
             groupBox1.Location = new Point(12, 164);
@@ -125,6 +127,17 @@
             groupBox1.TabIndex = 12;
             groupBox1.TabStop = false;
             groupBox1.Text = "Zapisz nagrania w folderze:";
+            // 
+            // openSaveDirBtn
+            // 
+            openSaveDirBtn.Enabled = false;
+            openSaveDirBtn.Location = new Point(180, 59);
+            openSaveDirBtn.Name = "openSaveDirBtn";
+            openSaveDirBtn.Size = new Size(62, 23);
+            openSaveDirBtn.TabIndex = 9;
+            openSaveDirBtn.Text = "Otwórz";
+            openSaveDirBtn.UseVisualStyleBackColor = true;
+            openSaveDirBtn.Click += openSaveDirBtn_Click;
             // 
             // refreshAppsBtn
             // 
@@ -191,7 +204,7 @@
             // 
             optionsBlocker.Controls.Add(label3);
             optionsBlocker.Controls.Add(label1);
-            optionsBlocker.Location = new Point(0, 281);
+            optionsBlocker.Location = new Point(0, 301);
             optionsBlocker.Name = "optionsBlocker";
             optionsBlocker.Size = new Size(273, 185);
             optionsBlocker.TabIndex = 20;
@@ -218,19 +231,20 @@
             // seeRecordingsToMixBtn
             // 
             seeRecordingsToMixBtn.Enabled = false;
-            seeRecordingsToMixBtn.Location = new Point(12, 254);
+            seeRecordingsToMixBtn.Location = new Point(12, 258);
             seeRecordingsToMixBtn.Name = "seeRecordingsToMixBtn";
             seeRecordingsToMixBtn.Size = new Size(189, 23);
             seeRecordingsToMixBtn.TabIndex = 21;
             seeRecordingsToMixBtn.Text = "Skanowanie nagrań...";
             seeRecordingsToMixBtn.UseVisualStyleBackColor = true;
+            seeRecordingsToMixBtn.Click += seeRecordingsToMixBtn_Click;
             // 
             // recordingsToMixCounterDisplay
             // 
             recordingsToMixCounterDisplay.BackColor = Color.Red;
             recordingsToMixCounterDisplay.Font = new Font("Segoe UI", 9.75F, FontStyle.Bold, GraphicsUnit.Point);
             recordingsToMixCounterDisplay.ForeColor = Color.White;
-            recordingsToMixCounterDisplay.Location = new Point(207, 254);
+            recordingsToMixCounterDisplay.Location = new Point(207, 258);
             recordingsToMixCounterDisplay.Name = "recordingsToMixCounterDisplay";
             recordingsToMixCounterDisplay.Size = new Size(23, 23);
             recordingsToMixCounterDisplay.TabIndex = 22;
@@ -242,7 +256,7 @@
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(273, 281);
+            ClientSize = new Size(273, 291);
             Controls.Add(optionsBlocker);
             Controls.Add(recordingsToMixCounterDisplay);
             Controls.Add(seeRecordingsToMixBtn);
@@ -291,5 +305,6 @@
         private Label label3;
         private Button seeRecordingsToMixBtn;
         private Label recordingsToMixCounterDisplay;
+        private Button openSaveDirBtn;
     }
 }

@@ -5,6 +5,8 @@ using ScreenRecorderLib;
 using System.Diagnostics;
 using System.Globalization;
 using Transitions;
+using Xabe.FFmpeg;
+using Xabe.FFmpeg.Downloader;
 using ScreenRecorder = ScreenRecorderLib.Recorder;
 
 namespace screen_recorder
@@ -28,16 +30,6 @@ namespace screen_recorder
             InitializeComponent();
         }
 
-        private void RefreshApps()
-        {
-            availableAppsToCapture = Process.GetProcesses()
-                .Where(proc => !string.IsNullOrEmpty(proc.MainWindowTitle) && proc.Id != Environment.ProcessId)
-                .Select(proc => new ProcessInfo(proc.Id, proc.ProcessName, proc.MainWindowTitle, proc.MainModule?.FileName))
-                .ToArray();
-            appChooser.Items.Clear();
-            appChooser.Items.AddRange(availableAppsToCapture);
-        }
-
         private void Form1_Load(object sender, EventArgs e)
         {
             MinimumSize = MaximumSize = Size;
@@ -54,6 +46,7 @@ namespace screen_recorder
             if (saveDirectory != string.Empty)
             {
                 saveDirectoryDisplay.Text = saveDirectory;
+                openSaveDirBtn.Enabled = true;
             }
 
             identifierTextBox.Text = Properties.Settings.Default.identifier;
@@ -61,7 +54,7 @@ namespace screen_recorder
             ControlDecoration.MakeControlRounded(refreshAppsBtn, 1, 1, 2, 0);
             identifierHelpBtn.FlatAppearance.BorderSize = 0;
             ControlDecoration.MakeControlRounded(identifierHelpBtn, 1, 1, 3, 2, 20);
-            ControlDecoration.MakeControlRounded(recordingsToMixCounterDisplay, 0, 1, 2, 0, 20);
+            ControlDecoration.MakeControlRounded(recordingsToMixCounterDisplay, 1, 2, 3, 1, 20);
             refreshAppsBtnTooltip.SetToolTip(refreshAppsBtn, "Odœwie¿ listê aplikacji");
 
             RefreshApps();
@@ -75,12 +68,29 @@ namespace screen_recorder
             }
 
             RefreshRecordingsToMix();
+
+            if (!File.Exists("ffmpeg.exe") || !File.Exists("ffprobe.exe"))
+            {
+                new FFMpegDownloadDialog().ShowDialog();
+            }
+        }
+
+        private void RefreshApps()
+        {
+            availableAppsToCapture = Process.GetProcesses()
+                .Where(proc => !string.IsNullOrEmpty(proc.MainWindowTitle) && proc.Id != Environment.ProcessId)
+                .Select(proc => new ProcessInfo(proc.Id, proc.ProcessName, proc.MainWindowTitle, proc.MainModule?.FileName))
+                .ToArray();
+            appChooser.Items.Clear();
+            appChooser.Items.AddRange(availableAppsToCapture);
         }
 
         private void RefreshRecordingsToMix()
         {
             seeRecordingsToMixBtn.Enabled = false;
             seeRecordingsToMixBtn.Text = "Skanowanie nagrañ...";
+
+            recordingsToMix.Clear();
 
             new Thread(() =>
             {
@@ -196,6 +206,7 @@ namespace screen_recorder
             {
                 saveDirectory = Properties.Settings.Default.saveDir = saveDirectoryDisplay.Text = recordingsDirectoryChooser.SelectedPath;
                 Properties.Settings.Default.Save();
+                openSaveDirBtn.Enabled = true;
             }
         }
 
@@ -357,6 +368,21 @@ namespace screen_recorder
             transition.add(timerDisplay, "Left", 16);
             transition.add(optionsBlocker, "Top", hiddenOptionsBlockerPosition);
             transition.run();
+
+            var mixImmediately = MessageBox.Show("Czy chcesz od razu rozpocz¹æ mixowanie nagrania? Mo¿na zawsze to zrobiæ póŸniej.", "Mixuj nagranie", MessageBoxButtons.YesNo, MessageBoxIcon.Question) == DialogResult.Yes;
+            RefreshRecordingsToMix();
+
+            if (mixImmediately)
+            {
+                if (recordingsToMix.Count == 0)
+                {
+                    MessageBox.Show("Nie ma ju¿ ¿adnych dostêpnych nagrañ do mixu.", "Brak nagrañ", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    return;
+                }
+
+                new MixingManagerDialog(recordingsToMix).ShowDialog();
+                RefreshRecordingsToMix();
+            }
         }
 
         private void refreshAppsBtn_Click(object sender, EventArgs e)
@@ -395,6 +421,25 @@ namespace screen_recorder
 
             self.Text = self.Text.Replace(" ", "");
             Properties.Settings.Default.identifier = self.Text;
+        }
+
+        private void seeRecordingsToMixBtn_Click(object sender, EventArgs e)
+        {
+            RefreshRecordingsToMix();
+
+            if (recordingsToMix.Count == 0)
+            {
+                MessageBox.Show("Nie ma ju¿ ¿adnych dostêpnych nagrañ do mixu.", "Brak nagrañ", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            new MixingManagerDialog(recordingsToMix).ShowDialog();
+            RefreshRecordingsToMix();
+        }
+
+        private void openSaveDirBtn_Click(object sender, EventArgs e)
+        {
+            Process.Start("explorer.exe", saveDirectory);
         }
     }
 }
