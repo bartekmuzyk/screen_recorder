@@ -73,6 +73,16 @@ namespace screen_recorder.Properties {
         /// <summary>
         ///   Wyszukuje zlokalizowany zasób typu System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap mixing_icon {
+            get {
+                object obj = ResourceManager.GetObject("mixing icon", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Wyszukuje zlokalizowany zasób typu System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap rec_icon {
             get {
                 object obj = ResourceManager.GetObject("rec icon", resourceCulture);

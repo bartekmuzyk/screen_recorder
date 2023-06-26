@@ -1,12 +1,9 @@
-using NAudio.Wave;
-using screen_recorder.AudioCapture;
 using screen_recorder.Models;
 using ScreenRecorderLib;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using Transitions;
-using Xabe.FFmpeg;
-using Xabe.FFmpeg.Downloader;
 using ScreenRecorder = ScreenRecorderLib.Recorder;
 
 namespace screen_recorder
@@ -17,13 +14,15 @@ namespace screen_recorder
 
         private ScreenRecorder? capMainRecorder = null;
 
-        private ProcessInfo[] availableAppsToCapture = Array.Empty<ProcessInfo>();
+        private Duration? recordingDuration = null;
+
+        private List<ProcessInfo> availableAppsToCapture = new();
 
         private string saveDirectory = string.Empty;
 
         private int hiddenOptionsBlockerPosition;
 
-        private readonly List<RecordingToMix> recordingsToMix = new();
+        private List<RecordingToMix> recordingsToMix = new();
 
         public Form1()
         {
@@ -79,10 +78,141 @@ namespace screen_recorder
         {
             availableAppsToCapture = Process.GetProcesses()
                 .Where(proc => !string.IsNullOrEmpty(proc.MainWindowTitle) && proc.Id != Environment.ProcessId)
-                .Select(proc => new ProcessInfo(proc.Id, proc.ProcessName, proc.MainWindowTitle, proc.MainModule?.FileName))
-                .ToArray();
+                .Select(proc =>
+                {
+                    try
+                    {
+                        return new ProcessInfo(proc.Id, proc.ProcessName, proc.MainWindowTitle, proc.MainModule?.FileName);
+                    }
+                    catch (Win32Exception exception)
+                    {
+                        if (exception.NativeErrorCode == 5)
+                        {
+                            return null;
+                        }
+                        else
+                        {
+                            throw;
+                        }
+                    }
+                })
+                .Where(proc => proc is not null)
+                .ToList() as List<ProcessInfo>;
+
             appChooser.Items.Clear();
-            appChooser.Items.AddRange(availableAppsToCapture);
+            appChooser.Items.AddRange(availableAppsToCapture.ToArray());
+            GC.Collect();
+        }
+
+        private static RecordingInfo? PathToRecording(string filePath)
+        {
+            if (!filePath.EndsWith(".wav") && !filePath.EndsWith(".mp4")) return null;
+
+            var fileName = Path.GetFileName(filePath);
+            var split = fileName.Split('_');
+
+            if (split.Length != 4) return null;
+
+            var splitFirstFragment = split[0].Split('-');
+
+            if (
+                splitFirstFragment.Length != 2 ||
+                splitFirstFragment[0].Length != 8 ||
+                !int.TryParse(splitFirstFragment[0], out _) ||
+                !int.TryParse(splitFirstFragment[1], out _)
+            ) return null;
+
+            var splitLastFragment = split[^1].Split('.');
+
+            if (splitLastFragment.Length != 2) return null;
+
+            split = new string[] {
+                splitFirstFragment[0], splitFirstFragment[1],
+                split[1], split[2],
+                splitLastFragment[0], splitLastFragment[1]
+            };
+
+            var recordingDate = DateTime.ParseExact(split[0], RecordingFilePathProvider.FILE_NAME_DATE_FORMAT, CultureInfo.InvariantCulture);
+
+            return new RecordingInfo(
+                recordingDate,
+                int.Parse(split[1]),
+                split[2],
+                split[3] switch
+                {
+                    "CapMain" => RecordingType.CapMain,
+                    "CapAudio" => RecordingType.CapAudio,
+                    _ => throw new Exception($"Unkown recording file type: {split[3]}")
+                },
+                filePath,
+                split[4]
+            );
+        }
+
+        private static bool RecordingMatches(RecordingInfo left, RecordingInfo right)
+        {
+            return (
+                left.GameName == right.GameName &&
+                left.RecordingNumber == right.RecordingNumber &&
+                left.Date == right.Date &&
+                left.Type != right.Type
+            );
+        }
+
+        private List<RecordingToMix> GetRecordingsToMix()
+        {
+            if (!Directory.Exists(saveDirectory))
+            {
+                throw new DirectoryNotFoundException();
+            }
+
+            var recordings = Directory.GetFiles(saveDirectory).Select(PathToRecording);
+            var matches = new List<RecordingInfo[]>();
+            var result = new List<RecordingToMix>();
+
+            foreach (var recording in recordings)
+            {
+                if (recording is null) continue;
+
+                var matchFound = false;
+
+                for (int i = 0; i < matches.Count; i++)
+                {
+                    var match = matches[i];
+
+                    if (match.Length == 2) continue;
+
+                    if (RecordingMatches(match[0], recording))
+                    {
+                        matches[i] = new[] { match[0], recording };
+                        matchFound = true;
+                        break;
+                    }
+                }
+
+                if (!matchFound)
+                {
+                    matches.Add(new[] { recording });
+                }
+            }
+
+            matches.RemoveAll(match => match.Length < 2);
+
+            foreach (var match in matches)
+            {
+                result.Add(
+                    new RecordingToMix(
+                        match[0].Date,
+                        match[0].RecordingNumber,
+                        match[0].GameName,
+                        match[0].Identifier,
+                        match[0].Type == RecordingType.CapAudio ? match[0] : match[1],
+                        match[1].Type == RecordingType.CapMain ? match[1] : match[0]
+                    )
+                );
+            }
+
+            return result;
         }
 
         private void RefreshRecordingsToMix()
@@ -94,85 +224,19 @@ namespace screen_recorder
 
             new Thread(() =>
             {
-                RecordingInfo PathToRecording(string filePath)
+                try
                 {
-                    var fileName = Path.GetFileName(filePath);
-
-                    var split = fileName.Split('_');
-                    var splitFirstFragment = split[0].Split('-');
-                    var splitLastFragment = split[split.Length - 1].Split('.');
-                    split = new string[] {
-                        splitFirstFragment[0], splitFirstFragment[1],
-                        split[1], split[2],
-                        splitLastFragment[0], splitLastFragment[1]
-                    };
-
-                    var recordingDate = DateTime.ParseExact(split[0], RecordingFilePathProvider.FILE_NAME_DATE_FORMAT, CultureInfo.InvariantCulture);
-
-                    return new RecordingInfo(
-                        recordingDate,
-                        int.Parse(split[1]),
-                        split[2],
-                        split[3] switch
-                        {
-                            "CapMain" => RecordingType.CapMain,
-                            "CapAudio" => RecordingType.CapAudio,
-                            _ => throw new Exception($"Unkown recording file type: {split[3]}")
-                        },
-                        filePath
-                    );
+                    recordingsToMix = GetRecordingsToMix();
                 }
-
-                bool RecordingMatches(RecordingInfo left, RecordingInfo right)
+                catch (DirectoryNotFoundException)
                 {
-                    return (
-                        left.GameName == right.GameName &&
-                        left.RecordingNumber == right.RecordingNumber &&
-                        left.Date == right.Date &&
-                        left.Type != right.Type
-                    );
-                }
-
-                var recordings = Directory.GetFiles(saveDirectory).Select(PathToRecording);
-                var matches = new List<RecordingInfo[]>();
-
-                foreach (var recording in recordings)
-                {
-                    var matchFound = false;
-
-                    for (int i = 0; i < matches.Count; i++)
+                    Invoke(() =>
                     {
-                        var match = matches[i];
-
-                        if (match.Length == 2) continue;
-
-                        if (RecordingMatches(match[0], recording))
-                        {
-                            matches[i] = new[] { match[0], recording };
-                            matchFound = true;
-                            break;
-                        }
-                    }
-
-                    if (!matchFound)
-                    {
-                        matches.Add(new[] { recording });
-                    }
-                }
-
-                matches.RemoveAll(match => match.Length < 2);
-
-                foreach (var match in matches)
-                {
-                    recordingsToMix.Add(
-                        new RecordingToMix(
-                            match[0].Date,
-                            match[0].RecordingNumber,
-                            match[0].GameName,
-                            match[0].Type == RecordingType.CapAudio ? match[0] : match[1],
-                            match[1].Type == RecordingType.CapMain ? match[1] : match[0]
-                        )
-                    );
+                        Properties.Settings.Default.saveDir = saveDirectory = string.Empty;
+                        Properties.Settings.Default.Save();
+                        MessageBox.Show("Poprzednio ustawiony folder dla nagrañ nie mo¿e zostaæ teraz znaleziony. Odszukanie nagrañ do mixu nie jest mo¿liwe.", "Nie mo¿na odszukaæ nagrañ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    });
+                    recordingsToMix = new List<RecordingToMix>();
                 }
 
                 if (recordingsToMix.Count > 0)
@@ -206,85 +270,16 @@ namespace screen_recorder
 
             recordingsToMix.Clear();
 
-            RecordingInfo PathToRecording(string filePath)
+            try
             {
-                var fileName = Path.GetFileName(filePath);
-
-                var split = fileName.Split('_');
-                var splitFirstFragment = split[0].Split('-');
-                var splitLastFragment = split[split.Length - 1].Split('.');
-                split = new string[] {
-                        splitFirstFragment[0], splitFirstFragment[1],
-                        split[1], split[2],
-                        splitLastFragment[0], splitLastFragment[1]
-                    };
-
-                var recordingDate = DateTime.ParseExact(split[0], RecordingFilePathProvider.FILE_NAME_DATE_FORMAT, CultureInfo.InvariantCulture);
-
-                return new RecordingInfo(
-                    recordingDate,
-                    int.Parse(split[1]),
-                    split[2],
-                    split[3] switch
-                    {
-                        "CapMain" => RecordingType.CapMain,
-                        "CapAudio" => RecordingType.CapAudio,
-                        _ => throw new Exception($"Unkown recording file type: {split[3]}")
-                    },
-                    filePath
-                );
+                recordingsToMix = GetRecordingsToMix();
             }
-
-            bool RecordingMatches(RecordingInfo left, RecordingInfo right)
+            catch (DirectoryNotFoundException)
             {
-                return (
-                    left.GameName == right.GameName &&
-                    left.RecordingNumber == right.RecordingNumber &&
-                    left.Date == right.Date &&
-                    left.Type != right.Type
-                );
-            }
-
-            var recordings = Directory.GetFiles(saveDirectory).Select(PathToRecording);
-            var matches = new List<RecordingInfo[]>();
-
-            foreach (var recording in recordings)
-            {
-                var matchFound = false;
-
-                for (int i = 0; i < matches.Count; i++)
-                {
-                    var match = matches[i];
-
-                    if (match.Length == 2) continue;
-
-                    if (RecordingMatches(match[0], recording))
-                    {
-                        matches[i] = new[] { match[0], recording };
-                        matchFound = true;
-                        break;
-                    }
-                }
-
-                if (!matchFound)
-                {
-                    matches.Add(new[] { recording });
-                }
-            }
-
-            matches.RemoveAll(match => match.Length < 2);
-
-            foreach (var match in matches)
-            {
-                recordingsToMix.Add(
-                    new RecordingToMix(
-                        match[0].Date,
-                        match[0].RecordingNumber,
-                        match[0].GameName,
-                        match[0].Type == RecordingType.CapAudio ? match[0] : match[1],
-                        match[1].Type == RecordingType.CapMain ? match[1] : match[0]
-                    )
-                );
+                Properties.Settings.Default.saveDir = saveDirectory = string.Empty;
+                Properties.Settings.Default.Save();
+                MessageBox.Show("Poprzednio ustawiony folder dla nagrañ nie mo¿e zostaæ teraz znaleziony. Odszukanie nagrañ do mixu nie jest mo¿liwe.", "Nie mo¿na odszukaæ nagrañ", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                recordingsToMix = new List<RecordingToMix>();
             }
 
             if (recordingsToMix.Count > 0)
@@ -312,6 +307,7 @@ namespace screen_recorder
                 saveDirectory = Properties.Settings.Default.saveDir = saveDirectoryDisplay.Text = recordingsDirectoryChooser.SelectedPath;
                 Properties.Settings.Default.Save();
                 openSaveDirBtn.Enabled = true;
+                RefreshRecordingsToMix();
             }
         }
 
@@ -437,6 +433,9 @@ namespace screen_recorder
 
                 capMainRecorder.Record(pathProvider.CapMainFilePath);
 
+                recordingDuration = new();
+                recordingTimer.Start();
+
                 self.Text = "Zatrzymaj nagrywanie";
                 self.Enabled = true;
                 recordingIcon.Visible = true;
@@ -465,6 +464,10 @@ namespace screen_recorder
             capMainRecorder?.Stop();
             capMainRecorder?.Dispose();
             capMainRecorder = null;
+
+            recordingTimer.Stop();
+            recordingDuration = null;
+            timerDisplay.Text = "00:00:00";
 
             self.Text = "Rozpocznij nagrywanie";
             self.Enabled = true;
@@ -547,6 +550,14 @@ namespace screen_recorder
         private void openSaveDirBtn_Click(object sender, EventArgs e)
         {
             Process.Start("explorer.exe", saveDirectory);
+        }
+
+        private void recordingTimer_Tick(object sender, EventArgs e)
+        {
+            if (recordingDuration is null) return;
+
+            recordingDuration.CountSecond();
+            timerDisplay.Text = recordingDuration.ToString();
         }
     }
 }

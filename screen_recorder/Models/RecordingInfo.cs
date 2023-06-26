@@ -17,6 +17,7 @@ namespace screen_recorder.Models
         int RecordingNumber,
         string GameName,
         RecordingType Type,
-        string Path
+        string Path,
+        string Identifier
     );
 }

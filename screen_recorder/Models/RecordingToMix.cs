@@ -10,6 +10,7 @@ namespace screen_recorder.Models
         DateTime Date,
         int RecordingNumber,
         string GameName,
+        string Identifier,
         RecordingInfo CapAudioRecording,
         RecordingInfo CapMainRecording
     );

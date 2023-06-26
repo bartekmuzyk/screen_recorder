@@ -50,6 +50,7 @@
             label1 = new Label();
             seeRecordingsToMixBtn = new Button();
             recordingsToMixCounterDisplay = new Label();
+            recordingTimer = new System.Windows.Forms.Timer(components);
             ((System.ComponentModel.ISupportInitialize)recordingIcon).BeginInit();
             groupBox1.SuspendLayout();
             optionsBlocker.SuspendLayout();
@@ -252,6 +253,11 @@
             recordingsToMixCounterDisplay.TextAlign = ContentAlignment.MiddleCenter;
             recordingsToMixCounterDisplay.Visible = false;
             // 
+            // recordingTimer
+            // 
+            recordingTimer.Interval = 1000;
+            recordingTimer.Tick += recordingTimer_Tick;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -306,5 +312,6 @@
         private Button seeRecordingsToMixBtn;
         private Label recordingsToMixCounterDisplay;
         private Button openSaveDirBtn;
+        private System.Windows.Forms.Timer recordingTimer;
     }
 }
