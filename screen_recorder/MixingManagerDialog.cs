@@ -42,6 +42,8 @@ namespace screen_recorder
                 return;
             }
 
+            ControlDecoration.AutoDecorate(this);
+
             foreach (var recording in recordingsToMix)
             {
                 recordingsListView.Items.Add(new ListViewItem(new[] { recording.GameName, recording.RecordingNumber.ToString(), recording.Date.ToString("d"), recording.Identifier }));

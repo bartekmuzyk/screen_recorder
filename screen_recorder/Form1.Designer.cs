@@ -143,7 +143,7 @@
             // refreshAppsBtn
             // 
             refreshAppsBtn.Font = new Font("Segoe MDL2 Assets", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
-            refreshAppsBtn.Location = new Point(244, 112);
+            refreshAppsBtn.Location = new Point(244, 111);
             refreshAppsBtn.Name = "refreshAppsBtn";
             refreshAppsBtn.Size = new Size(24, 24);
             refreshAppsBtn.TabIndex = 14;

@@ -31,6 +31,8 @@ namespace screen_recorder
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            ControlDecoration.AutoDecorate(this);
+
             MinimumSize = MaximumSize = Size;
 
             saveDirectory = Properties.Settings.Default.saveDir;

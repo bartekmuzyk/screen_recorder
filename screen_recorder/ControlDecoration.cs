@@ -26,16 +26,56 @@ namespace screen_recorder
         public static void AutoDecorate(Form form)
         {
             DarkMode.ApplyDarkTitleBar(form);
+            form.BackColor = Color.FromArgb(25, 31, 34);
+            form.ForeColor = Color.FromArgb(189, 230, 251);
 
-            foreach (Control control in form.Controls)
-            {
-                Decorate(control);
-            }
+            Decorate(form);
         }
 
         private static void Decorate(Control control)
         {
+            foreach (var button in control.Controls.OfType<Button>())
+            {
+                if (button.FlatStyle == FlatStyle.Flat) continue;
 
+                button.FlatStyle = FlatStyle.Flat;
+                button.FlatAppearance.MouseOverBackColor = Color.FromArgb(59, 73, 80);
+                button.FlatAppearance.BorderColor = Color.FromArgb(41, 51, 56);
+                button.FlatAppearance.BorderSize = 0;
+                button.FlatAppearance.MouseDownBackColor = Color.FromArgb(73, 88, 96);
+                button.BackColor = Color.FromArgb(41, 51, 56);
+                button.ForeColor = Color.FromArgb(189, 230, 251);
+                MakeControlRounded(button);
+            }
+
+            foreach (var textBox in control.Controls.OfType<TextBox>())
+            {
+                textBox.BackColor = Color.FromArgb(41, 51, 56);
+                textBox.BorderStyle = BorderStyle.FixedSingle;
+                textBox.ForeColor = Color.White;
+                MakeControlRounded(textBox, 1);
+            }
+
+            foreach (var comboBox in control.Controls.OfType<ComboBox>())
+            {
+                comboBox.FlatStyle = FlatStyle.Flat;
+                comboBox.BackColor = Color.FromArgb(41, 51, 56);
+                comboBox.ForeColor = Color.White;
+                MakeControlRounded(comboBox, 2, 0, 2, 2);
+            }
+
+            foreach (var progressBar in control.Controls.OfType<ProgressBar>())
+            {
+                progressBar.BackColor = Color.FromArgb(41, 51, 56);
+            }
+
+            foreach (var panel in control.Controls.OfType<Panel>()) Decorate(panel);
+
+            foreach (var groupBox in control.Controls.OfType<GroupBox>())
+            {
+                groupBox.ForeColor = Color.FromArgb(189, 230, 251);
+                Decorate(groupBox);
+            }
         }
     }
 }
