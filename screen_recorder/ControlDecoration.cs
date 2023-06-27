@@ -22,5 +22,20 @@ namespace screen_recorder
         {
             control.Region = Region.FromHrgn(CreateRoundRectRgn(0 + leftPadding, 0 + topPadding, control.Width - rightPadding, control.Height - bottomPadding, radius, radius));
         }
+
+        public static void AutoDecorate(Form form)
+        {
+            DarkMode.ApplyDarkTitleBar(form);
+
+            foreach (Control control in form.Controls)
+            {
+                Decorate(control);
+            }
+        }
+
+        private static void Decorate(Control control)
+        {
+
+        }
     }
 }
