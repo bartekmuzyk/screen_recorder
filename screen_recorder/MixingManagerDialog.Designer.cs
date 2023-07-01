@@ -52,6 +52,7 @@
             label5 = new Label();
             label4 = new Label();
             label3 = new Label();
+            mixProgressBar = new ProgressBar();
             capMainPanel.SuspendLayout();
             capAudioPanel.SuspendLayout();
             mixResultPanel.SuspendLayout();
@@ -187,6 +188,7 @@
             // 
             // bottomPanel
             // 
+            bottomPanel.Controls.Add(mixProgressBar);
             bottomPanel.Controls.Add(startMixBtn);
             bottomPanel.Controls.Add(capMainPanel);
             bottomPanel.Controls.Add(mixResultPanel);
@@ -206,6 +208,7 @@
             startMixBtn.TabIndex = 8;
             startMixBtn.Text = "Mixuj";
             startMixBtn.UseVisualStyleBackColor = true;
+            startMixBtn.Click += startMixBtn_Click;
             // 
             // recordingsListHeader
             // 
@@ -259,6 +262,13 @@
             label3.TabIndex = 0;
             label3.Text = "Nazwa nagrywanej gry";
             // 
+            // mixProgressBar
+            // 
+            mixProgressBar.Location = new Point(217, 68);
+            mixProgressBar.Name = "mixProgressBar";
+            mixProgressBar.Size = new Size(106, 23);
+            mixProgressBar.TabIndex = 9;
+            // 
             // MixingManagerDialog
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -310,5 +320,6 @@
         private Label label4;
         private Label label3;
         private Button startMixBtn;
+        private ProgressBar mixProgressBar;
     }
 }

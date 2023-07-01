@@ -77,5 +77,10 @@ namespace screen_recorder
         {
             labelSlideEffect.Tick();
         }
+
+        private void startMixBtn_Click(object sender, EventArgs e)
+        {
+            
+        }
     }
 }
