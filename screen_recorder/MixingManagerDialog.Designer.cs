@@ -46,21 +46,29 @@
             pictureBox1 = new PictureBox();
             labelSlideTimer = new System.Windows.Forms.Timer(components);
             bottomPanel = new Panel();
+            startMixBtn = new Button();
+            recordingsListHeader = new Panel();
+            label6 = new Label();
+            label5 = new Label();
+            label4 = new Label();
+            label3 = new Label();
             capMainPanel.SuspendLayout();
             capAudioPanel.SuspendLayout();
             mixResultPanel.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
             bottomPanel.SuspendLayout();
+            recordingsListHeader.SuspendLayout();
             SuspendLayout();
             // 
             // recordingsListView
             // 
+            recordingsListView.BorderStyle = BorderStyle.None;
             recordingsListView.Columns.AddRange(new ColumnHeader[] { columnHeader1, columnHeader2, columnHeader3, columnHeader4 });
             recordingsListView.FullRowSelect = true;
-            recordingsListView.HeaderStyle = ColumnHeaderStyle.Nonclickable;
-            recordingsListView.Location = new Point(12, 12);
+            recordingsListView.HeaderStyle = ColumnHeaderStyle.None;
+            recordingsListView.Location = new Point(12, 35);
             recordingsListView.Name = "recordingsListView";
-            recordingsListView.Size = new Size(387, 172);
+            recordingsListView.Size = new Size(387, 149);
             recordingsListView.TabIndex = 0;
             recordingsListView.UseCompatibleStateImageBehavior = false;
             recordingsListView.View = View.Details;
@@ -69,21 +77,22 @@
             // columnHeader1
             // 
             columnHeader1.Text = "Nazwa nagrywanej gry";
-            columnHeader1.Width = 140;
+            columnHeader1.Width = 135;
             // 
             // columnHeader2
             // 
             columnHeader2.Text = "Nr nagr.";
+            columnHeader2.Width = 55;
             // 
             // columnHeader3
             // 
             columnHeader3.Text = "Data nagrania";
-            columnHeader3.Width = 100;
+            columnHeader3.Width = 90;
             // 
             // columnHeader4
             // 
             columnHeader4.Text = "Identyfikator";
-            columnHeader4.Width = 80;
+            columnHeader4.Width = 90;
             // 
             // capMainPanel
             // 
@@ -178,6 +187,7 @@
             // 
             // bottomPanel
             // 
+            bottomPanel.Controls.Add(startMixBtn);
             bottomPanel.Controls.Add(capMainPanel);
             bottomPanel.Controls.Add(mixResultPanel);
             bottomPanel.Controls.Add(pictureBox1);
@@ -188,6 +198,67 @@
             bottomPanel.TabIndex = 8;
             bottomPanel.Visible = false;
             // 
+            // startMixBtn
+            // 
+            startMixBtn.Location = new Point(329, 68);
+            startMixBtn.Name = "startMixBtn";
+            startMixBtn.Size = new Size(58, 23);
+            startMixBtn.TabIndex = 8;
+            startMixBtn.Text = "Mixuj";
+            startMixBtn.UseVisualStyleBackColor = true;
+            // 
+            // recordingsListHeader
+            // 
+            recordingsListHeader.BackColor = SystemColors.ControlLight;
+            recordingsListHeader.Controls.Add(label6);
+            recordingsListHeader.Controls.Add(label5);
+            recordingsListHeader.Controls.Add(label4);
+            recordingsListHeader.Controls.Add(label3);
+            recordingsListHeader.Location = new Point(12, 12);
+            recordingsListHeader.Name = "recordingsListHeader";
+            recordingsListHeader.Size = new Size(387, 38);
+            recordingsListHeader.TabIndex = 9;
+            // 
+            // label6
+            // 
+            label6.AutoSize = true;
+            label6.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            label6.Location = new Point(283, 5);
+            label6.Name = "label6";
+            label6.Size = new Size(81, 15);
+            label6.TabIndex = 3;
+            label6.Text = "Identyfikator";
+            // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            label5.Location = new Point(193, 5);
+            label5.Name = "label5";
+            label5.Size = new Size(83, 15);
+            label5.TabIndex = 2;
+            label5.Text = "Data nagrania";
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            label4.Location = new Point(138, 5);
+            label4.Name = "label4";
+            label4.Size = new Size(51, 15);
+            label4.TabIndex = 1;
+            label4.Text = "Nr nagr.";
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            label3.Location = new Point(3, 5);
+            label3.Name = "label3";
+            label3.Size = new Size(132, 15);
+            label3.TabIndex = 0;
+            label3.Text = "Nazwa nagrywanej gry";
+            // 
             // MixingManagerDialog
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -195,6 +266,7 @@
             ClientSize = new Size(411, 300);
             Controls.Add(bottomPanel);
             Controls.Add(recordingsListView);
+            Controls.Add(recordingsListHeader);
             FormBorderStyle = FormBorderStyle.FixedDialog;
             Icon = (Icon)resources.GetObject("$this.Icon");
             MaximizeBox = false;
@@ -209,6 +281,8 @@
             mixResultPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             bottomPanel.ResumeLayout(false);
+            recordingsListHeader.ResumeLayout(false);
+            recordingsListHeader.PerformLayout();
             ResumeLayout(false);
         }
 
@@ -230,5 +304,11 @@
         private Label mixResultLabel;
         private System.Windows.Forms.Timer labelSlideTimer;
         private Panel bottomPanel;
+        private Panel recordingsListHeader;
+        private Label label6;
+        private Label label5;
+        private Label label4;
+        private Label label3;
+        private Button startMixBtn;
     }
 }

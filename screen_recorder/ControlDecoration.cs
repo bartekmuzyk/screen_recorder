@@ -4,6 +4,10 @@ namespace screen_recorder
 {
     internal static class ControlDecoration
     {
+        private static readonly Color foreColor = Color.FromArgb(189, 230, 251);
+
+        private static readonly Color controlBackColor = Color.FromArgb(41, 51, 56);
+
         [DllImport("Gdi32.dll", EntryPoint = "CreateRoundRectRgn")]
         private static extern IntPtr CreateRoundRectRgn(int nLeftRect, // x-coordinate of upper-left corner
                                                         int nTopRect, // y-coordinate of upper-left corner
@@ -27,7 +31,7 @@ namespace screen_recorder
         {
             DarkMode.ApplyDarkTitleBar(form);
             form.BackColor = Color.FromArgb(25, 31, 34);
-            form.ForeColor = Color.FromArgb(189, 230, 251);
+            form.ForeColor = foreColor;
 
             Decorate(form);
         }
@@ -40,41 +44,60 @@ namespace screen_recorder
 
                 button.FlatStyle = FlatStyle.Flat;
                 button.FlatAppearance.MouseOverBackColor = Color.FromArgb(59, 73, 80);
-                button.FlatAppearance.BorderColor = Color.FromArgb(41, 51, 56);
+                button.FlatAppearance.BorderColor = controlBackColor;
                 button.FlatAppearance.BorderSize = 0;
                 button.FlatAppearance.MouseDownBackColor = Color.FromArgb(73, 88, 96);
-                button.BackColor = Color.FromArgb(41, 51, 56);
-                button.ForeColor = Color.FromArgb(189, 230, 251);
+                button.BackColor = controlBackColor;
+                button.ForeColor = foreColor;
                 MakeControlRounded(button);
             }
 
             foreach (var textBox in control.Controls.OfType<TextBox>())
             {
-                textBox.BackColor = Color.FromArgb(41, 51, 56);
-                textBox.BorderStyle = BorderStyle.FixedSingle;
+                var height = textBox.Height;
+                textBox.BackColor = controlBackColor;
+                textBox.BorderStyle = BorderStyle.None;
                 textBox.ForeColor = Color.White;
-                MakeControlRounded(textBox, 1);
+                textBox.Location = new Point(textBox.Location.X, textBox.Location.Y + 4);
+                textBox.Height = height;
+                MakeControlRounded(textBox, 0, 5);
             }
 
             foreach (var comboBox in control.Controls.OfType<ComboBox>())
             {
                 comboBox.FlatStyle = FlatStyle.Flat;
-                comboBox.BackColor = Color.FromArgb(41, 51, 56);
+                comboBox.BackColor = controlBackColor;
                 comboBox.ForeColor = Color.White;
                 MakeControlRounded(comboBox, 2, 0, 2, 2);
             }
 
             foreach (var progressBar in control.Controls.OfType<ProgressBar>())
             {
-                progressBar.BackColor = Color.FromArgb(41, 51, 56);
+                progressBar.BackColor = controlBackColor;
             }
 
-            foreach (var panel in control.Controls.OfType<Panel>()) Decorate(panel);
+            foreach (var panel in control.Controls.OfType<Panel>())
+            {
+                if (panel.BackColor == SystemColors.ControlLight)
+                {
+                    panel.BackColor = controlBackColor;
+                }
+
+                Decorate(panel);
+            }
 
             foreach (var groupBox in control.Controls.OfType<GroupBox>())
             {
-                groupBox.ForeColor = Color.FromArgb(189, 230, 251);
+                groupBox.ForeColor = foreColor;
                 Decorate(groupBox);
+            }
+
+            foreach (var listView in control.Controls.OfType<ListView>())
+            {
+                listView.BackColor = controlBackColor;
+                listView.ForeColor = foreColor;
+                listView.BorderStyle = BorderStyle.None;
+                MakeControlRounded(listView);
             }
         }
     }

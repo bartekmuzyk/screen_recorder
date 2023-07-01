@@ -88,7 +88,7 @@ namespace screen_recorder
                     }
                     catch (Win32Exception exception)
                     {
-                        if (exception.NativeErrorCode == 5)
+                        if (exception.NativeErrorCode == 5)  // Access denied
                         {
                             return null;
                         }
@@ -214,7 +214,7 @@ namespace screen_recorder
                 );
             }
 
-            return result;
+            return result.OrderByDescending(recording => $"{recording.Date:yyyymmdd}{recording.RecordingNumber}").ToList();
         }
 
         private void RefreshRecordingsToMix()
@@ -524,7 +524,7 @@ namespace screen_recorder
 
         private void identifierHelpBtn_Click(object sender, EventArgs e)
         {
-            new IdentifierHelpDialog().ShowDialog();
+            new IdentifierHelpDialog().Show();
         }
 
         private void identifierTextBox_TextChanged(object sender, EventArgs e)

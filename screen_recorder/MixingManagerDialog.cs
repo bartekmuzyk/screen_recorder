@@ -5,21 +5,15 @@ namespace screen_recorder
 {
     public partial class MixingManagerDialog : Form
     {
-        private const int STARTING_SLIDE_COUNTER_VALUE = -5;
-
         private List<RecordingToMix> recordingsToMix;
 
         private RecordingToMix? chosenRecording = null;
 
         private string capMainFileName = string.Empty;
 
-        private int capMainFileNameDisplaySlideCounter = STARTING_SLIDE_COUNTER_VALUE;
-
         private string capAudioFileName = string.Empty;
 
-        private int capAudioFileNameDisplaySlideCounter = STARTING_SLIDE_COUNTER_VALUE;
-
-        private LabelSlideEffect labelSlideEffect = new();
+        private readonly LabelSlideEffect labelSlideEffect = new();
 
         public MixingManagerDialog(List<RecordingToMix> recordingsToMix)
         {
@@ -52,6 +46,7 @@ namespace screen_recorder
             ControlDecoration.MakeControlRounded(capMainPanel);
             ControlDecoration.MakeControlRounded(capAudioPanel);
             ControlDecoration.MakeControlRounded(mixResultPanel);
+            ControlDecoration.MakeControlRounded(recordingsListHeader);
 
             labelSlideEffect.AddLabel(capMainLabel);
             labelSlideEffect.AddLabel(capAudioLabel);

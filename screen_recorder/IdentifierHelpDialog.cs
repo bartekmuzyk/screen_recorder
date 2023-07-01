@@ -23,5 +23,15 @@ namespace screen_recorder
         {
             ControlDecoration.MakeControlRounded(pictureBox1);
         }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Close();
+        }
+
+        private void IdentifierHelpDialog_Deactivate(object sender, EventArgs e)
+        {
+            Close();
+        }
     }
 }

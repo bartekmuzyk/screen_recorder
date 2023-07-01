@@ -60,7 +60,7 @@
             // 
             timerDisplay.AutoSize = true;
             timerDisplay.Font = new Font("Segoe UI", 24F, FontStyle.Bold, GraphicsUnit.Point);
-            timerDisplay.Location = new Point(16, 9);
+            timerDisplay.Location = new Point(16, 8);
             timerDisplay.Name = "timerDisplay";
             timerDisplay.Size = new Size(146, 45);
             timerDisplay.TabIndex = 2;
@@ -143,7 +143,7 @@
             // refreshAppsBtn
             // 
             refreshAppsBtn.Font = new Font("Segoe MDL2 Assets", 8.25F, FontStyle.Regular, GraphicsUnit.Point);
-            refreshAppsBtn.Location = new Point(244, 111);
+            refreshAppsBtn.Location = new Point(244, 112);
             refreshAppsBtn.Name = "refreshAppsBtn";
             refreshAppsBtn.Size = new Size(24, 24);
             refreshAppsBtn.TabIndex = 14;
