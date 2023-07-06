@@ -12,6 +12,7 @@ namespace screen_recorder.Models
         string GameName,
         string Identifier,
         RecordingInfo CapAudioRecording,
-        RecordingInfo CapMainRecording
+        RecordingInfo CapMainRecording,
+        string ParentDirectory
     );
 }

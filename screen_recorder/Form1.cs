@@ -202,19 +202,22 @@ namespace screen_recorder
 
             foreach (var match in matches)
             {
-                result.Add(
-                    new RecordingToMix(
-                        match[0].Date,
-                        match[0].RecordingNumber,
-                        match[0].GameName,
-                        match[0].Identifier,
-                        match[0].Type == RecordingType.CapAudio ? match[0] : match[1],
-                        match[1].Type == RecordingType.CapMain ? match[1] : match[0]
-                    )
+                var recording = new RecordingToMix(
+                    match[0].Date,
+                    match[0].RecordingNumber,
+                    match[0].GameName,
+                    match[0].Identifier,
+                    match[0].Type == RecordingType.CapAudio ? match[0] : match[1],
+                    match[1].Type == RecordingType.CapMain ? match[1] : match[0],
+                    Path.GetDirectoryName(match[0].Path)!
                 );
+
+                if (File.Exists(RecordingFilePathProvider.GetMixedFilePathForRecording(recording))) continue;
+
+                result.Add(recording);
             }
 
-            return result.OrderByDescending(recording => $"{recording.Date:yyyymmdd}{recording.RecordingNumber}").ToList();
+            return result.OrderByDescending(recording => $"{recording.Date:yyyyMMdd}{recording.RecordingNumber}").ToList();
         }
 
         private void RefreshRecordingsToMix()

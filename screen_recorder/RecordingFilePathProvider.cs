@@ -1,4 +1,5 @@
-﻿using System;
+﻿using screen_recorder.Models;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -47,6 +48,11 @@ namespace screen_recorder
                     format
                 )
             );
+        }
+
+        public static string GetMixedFilePathForRecording(RecordingToMix recording)
+        {
+            return Path.Combine(recording.ParentDirectory, $"{recording.Identifier}-{recording.GameName}-Mix{recording.Date.ToString(FILE_NAME_DATE_FORMAT)}{recording.RecordingNumber}.mp4");
         }
     }
 }

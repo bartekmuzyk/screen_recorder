@@ -46,13 +46,14 @@
             pictureBox1 = new PictureBox();
             labelSlideTimer = new System.Windows.Forms.Timer(components);
             bottomPanel = new Panel();
+            mixInProgressWarning = new Label();
+            mixProgressBar = new ProgressBar();
             startMixBtn = new Button();
             recordingsListHeader = new Panel();
             label6 = new Label();
             label5 = new Label();
             label4 = new Label();
             label3 = new Label();
-            mixProgressBar = new ProgressBar();
             capMainPanel.SuspendLayout();
             capAudioPanel.SuspendLayout();
             mixResultPanel.SuspendLayout();
@@ -188,6 +189,7 @@
             // 
             // bottomPanel
             // 
+            bottomPanel.Controls.Add(mixInProgressWarning);
             bottomPanel.Controls.Add(mixProgressBar);
             bottomPanel.Controls.Add(startMixBtn);
             bottomPanel.Controls.Add(capMainPanel);
@@ -199,6 +201,26 @@
             bottomPanel.Size = new Size(387, 91);
             bottomPanel.TabIndex = 8;
             bottomPanel.Visible = false;
+            // 
+            // mixInProgressWarning
+            // 
+            mixInProgressWarning.AutoSize = true;
+            mixInProgressWarning.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            mixInProgressWarning.ForeColor = Color.Yellow;
+            mixInProgressWarning.Location = new Point(241, 2);
+            mixInProgressWarning.Name = "mixInProgressWarning";
+            mixInProgressWarning.Size = new Size(144, 30);
+            mixInProgressWarning.TabIndex = 10;
+            mixInProgressWarning.Text = "Mixowanie jeszcze trwa!\r\nNie zamykaj okna.";
+            mixInProgressWarning.TextAlign = ContentAlignment.TopRight;
+            mixInProgressWarning.Visible = false;
+            // 
+            // mixProgressBar
+            // 
+            mixProgressBar.Location = new Point(217, 68);
+            mixProgressBar.Name = "mixProgressBar";
+            mixProgressBar.Size = new Size(106, 23);
+            mixProgressBar.TabIndex = 9;
             // 
             // startMixBtn
             // 
@@ -262,13 +284,6 @@
             label3.TabIndex = 0;
             label3.Text = "Nazwa nagrywanej gry";
             // 
-            // mixProgressBar
-            // 
-            mixProgressBar.Location = new Point(217, 68);
-            mixProgressBar.Name = "mixProgressBar";
-            mixProgressBar.Size = new Size(106, 23);
-            mixProgressBar.TabIndex = 9;
-            // 
             // MixingManagerDialog
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -283,6 +298,7 @@
             MinimizeBox = false;
             Name = "MixingManagerDialog";
             Text = "Menedżer mixowania";
+            FormClosing += MixingManagerDialog_FormClosing;
             Load += MixingManagerDialog_Load;
             capMainPanel.ResumeLayout(false);
             capMainPanel.PerformLayout();
@@ -291,6 +307,7 @@
             mixResultPanel.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
             bottomPanel.ResumeLayout(false);
+            bottomPanel.PerformLayout();
             recordingsListHeader.ResumeLayout(false);
             recordingsListHeader.PerformLayout();
             ResumeLayout(false);
@@ -321,5 +338,6 @@
         private Label label3;
         private Button startMixBtn;
         private ProgressBar mixProgressBar;
+        private Label mixInProgressWarning;
     }
 }

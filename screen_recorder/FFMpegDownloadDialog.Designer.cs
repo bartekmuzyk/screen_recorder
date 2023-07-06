@@ -81,8 +81,10 @@
             Controls.Add(progressBar);
             Controls.Add(label2);
             Controls.Add(label1);
+            FormBorderStyle = FormBorderStyle.FixedSingle;
             Icon = (Icon)resources.GetObject("$this.Icon");
             Name = "FFMpegDownloadDialog";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Jeszcze tylko chwila!";
             FormClosing += FFMpegDownloadDialog_FormClosing;
             Load += FFMpegDownloadDialog_Load;
